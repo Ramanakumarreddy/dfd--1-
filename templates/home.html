@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepFake Detection - AI-Powered Security</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='simple.css') }}">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('homepage') }}" class="navbar-brand">
+                <i class="fas fa-shield-alt"></i> DeepFake Detect
+            </a>
+            <div class="navbar-nav">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('detect') }}" class="nav-link">Video</a>
+                    <a href="{{ url_for('image_detect') }}" class="nav-link">Image</a>
+                    {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin') }}" class="nav-link">Admin</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                    <a href="{{ url_for('signup') }}" class="btn btn-primary btn-sm">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Detect Deepfakes Instantly</h1>
+            <p>Upload your video or image and our AI will analyze it for manipulation. Get accurate results in seconds with detailed confidence scores.</p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('detect') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-video"></i> Analyze Video
+                </a>
+                <a href="{{ url_for('image_detect') }}" class="btn btn-outline btn-lg">
+                    <i class="fas fa-image"></i> Analyze Image
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="text-center mb-8">Why Choose Our Platform?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>AI-Powered</h3>
+                    <p>Advanced neural networks trained on millions of samples for accurate detection.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Fast Results</h3>
+                    <p>Get detection results in seconds, not minutes. Optimized for speed.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>Secure & Private</h3>
+                    <p>Your files are processed securely and deleted immediately after analysis.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>95%+ Accuracy</h3>
+                    <p>Industry-leading detection accuracy across diverse video and image types.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Works Everywhere</h3>
+                    <p>Access from any device - desktop, tablet, or mobile.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>24/7 Available</h3>
+                    <p>Our detection service is available around the clock.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section style="background: var(--gray-100); padding: var(--spacing-16) 0;">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">95%+</div>
+                    <div class="stat-label">Detection Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">20K+</div>
+                    <div class="stat-label">Files Analyzed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">&lt;5s</div>
+                    <div class="stat-label">Avg Processing Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">24/7</div>
+                    <div class="stat-label">Availability</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h4><i class="fas fa-shield-alt"></i> DeepFake Detect</h4>
+                    <p>AI-powered deepfake detection platform protecting users from manipulated media.</p>
+                </div>
+                <div>
+                    <h4>Quick Links</h4>
+                    <a href="{{ url_for('detect') }}">Video Detection</a>
+                    <a href="{{ url_for('image_detect') }}">Image Detection</a>
+                    <a href="{{ url_for('login') }}">Login</a>
+                </div>
+                <div>
+                    <h4>Legal</h4>
+                    <a href="{{ url_for('privacy') }}">Privacy Policy</a>
+                    <a href="{{ url_for('terms') }}">Terms of Service</a>
+                </div>
+                <div>
+                    <h4>Contact</h4>
+                    <a href="mailto:contact@deepfakedetect.ai">contact@deepfakedetect.ai</a>
+                    <a href="https://github.com/Mounish7028/Deepfake-Face-Detection" target="_blank">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 DeepFake Detection. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Detection - DeepFake Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='simple.css') }}">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('homepage') }}" class="navbar-brand">
+                <i class="fas fa-shield-alt"></i> DeepFake Detect
+            </a>
+            <div class="navbar-nav">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('detect') }}" class="nav-link active">Video</a>
+                <a href="{{ url_for('image_detect') }}" class="nav-link">Image</a>
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin') }}" class="nav-link">Admin</a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                <a href="{{ url_for('signup') }}" class="btn btn-primary btn-sm">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main style="padding: var(--spacing-8) 0;">
+        <div class="container container-md">
+            <div class="text-center mb-8">
+                <h1>Video Detection</h1>
+                <p>Upload a video file to analyze for deepfake manipulation</p>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-danger mb-6">
+                <i class="fas fa-exclamation-circle"></i> {{ error }}
+            </div>
+            {% endif %}
+
+            {% if data %}
+            <!-- Results Section -->
+            <div class="card mb-6">
+                <div class="result-card">
+                    <h2 class="mb-4">Analysis Result</h2>
+                    <div class="result-badge {{ 'real' if data.output == 'REAL' else 'fake' }}">
+                        {{ data.output }}
+                    </div>
+                    <p class="text-muted">Confidence: {{ data.confidence }}%</p>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: {{ data.confidence }}%;"></div>
+                    </div>
+                    <p class="text-muted" style="font-size: var(--font-size-sm);">
+                        Processing time: {{ data.processing_time }}s
+                    </p>
+                </div>
+            </div>
+
+            <!-- Graphs Section -->
+            {% if data.confidence_pie or data.comparison_bar %}
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">Analysis Graphs</h3>
+                </div>
+                <div class="card-body">
+                    <div class="graphs-grid">
+                        {% if data.confidence_pie %}
+                        <div class="graph-card">
+                            <img src="{{ url_for('static', filename=data.confidence_pie) }}" alt="Confidence Chart">
+                        </div>
+                        {% endif %}
+                        {% if data.confidence_meter %}
+                        <div class="graph-card">
+                            <img src="{{ url_for('static', filename=data.confidence_meter) }}" alt="Confidence Meter">
+                        </div>
+                        {% endif %}
+                        {% if data.comparison_bar %}
+                        <div class="graph-card">
+                            <img src="{{ url_for('static', filename=data.comparison_bar) }}" alt="Model Comparison">
+                        </div>
+                        {% endif %}
+                        {% if data.comparison_hbar %}
+                        <div class="graph-card">
+                            <img src="{{ url_for('static', filename=data.comparison_hbar) }}"
+                                alt="Performance Comparison">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Frames Section -->
+            {% if data.frames %}
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">Analyzed Frames</h3>
+                </div>
+                <div class="card-body">
+                    <div class="frames-grid">
+                        {% for frame in data.frames %}
+                        <div class="frame-item">
+                            <img src="{{ url_for('static', filename='frames/' + frame) }}" alt="Frame {{ loop.index }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="text-center">
+                <a href="{{ url_for('detect') }}" class="btn btn-primary">
+                    <i class="fas fa-redo"></i> Analyze Another Video
+                </a>
+            </div>
+
+            {% else %}
+            <!-- Upload Section -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Drag & Drop Video Here</div>
+                        <div class="upload-hint">or click to browse (MP4, AVI, MOV - Max 500MB)</div>
+                    </div>
+
+                    <div class="file-input-wrapper">
+                        <input type="file" id="videoFile" name="video" accept=".mp4,.avi,.mov" required>
+                        <label for="videoFile" class="file-label">
+                            <i class="fas fa-video"></i> Choose Video File
+                        </label>
+                    </div>
+
+                    <!-- Video Preview -->
+                    <div class="video-preview hidden" id="videoPreview">
+                        <video id="previewVideo" controls></video>
+                        <div class="preview-actions">
+                            <button type="button" class="btn btn-primary" onclick="submitVideo()">
+                                <i class="fas fa-play"></i> Analyze Video
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetUpload()">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div class="loading hidden" id="loadingState">
+                        <div class="spinner"></div>
+                        <p>Analyzing video... This may take a few seconds.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2025 DeepFake Detection. <a href="{{ url_for('privacy') }}">Privacy</a> · <a
+                        href="{{ url_for('terms') }}">Terms</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const videoInput = document.getElementById('videoFile');
+        const videoPreview = document.getElementById('videoPreview');
+        const previewVideo = document.getElementById('previewVideo');
+        const loadingState = document.getElementById('loadingState');
+        let selectedFile = null;
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('video/')) {
+                handleFile(file);
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            videoInput.click();
+        });
+
+        videoInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            selectedFile = file;
+            const url = URL.createObjectURL(file);
+            previewVideo.src = url;
+            uploadArea.classList.add('hidden');
+            document.querySelector('.file-input-wrapper').classList.add('hidden');
+            videoPreview.classList.remove('hidden');
+        }
+
+        function resetUpload() {
+            selectedFile = null;
+            previewVideo.src = '';
+            videoInput.value = '';
+            uploadArea.classList.remove('hidden');
+            document.querySelector('.file-input-wrapper').classList.remove('hidden');
+            videoPreview.classList.add('hidden');
+        }
+
+        function submitVideo() {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('video', selectedFile);
+
+            videoPreview.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+
+            fetch('{{ url_for("detect") }}', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.text())
+                .then(html => {
+                    document.open();
+                    document.write(html);
+                    document.close();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingState.classList.add('hidden');
+                    alert('An error occurred while processing the video.');
+                    resetUpload();
+                });
+        }
+    </script>
+</body>
+
+</html>
